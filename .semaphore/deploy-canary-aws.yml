@@ -133,6 +133,7 @@ blocks:
           - export PATH=~/bin:$PATH
           - sudo pip install awscli
           - kubectl get deployments
+          - kubectl get pods
 
       jobs:
         - name: Test and migrate db
