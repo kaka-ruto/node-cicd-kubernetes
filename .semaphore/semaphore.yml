@@ -49,6 +49,9 @@ blocks:
         - name: ECR_REGISTRY
           value: 961317956813.dkr.ecr.us-east-1.amazonaws.com/node-cicd-kubernetes
 
+      secrets:
+        - name: AWS
+
       # Pull the latest image to speed up builds
       prologue:
         commands:
@@ -85,6 +88,9 @@ blocks:
           value: us-east-1
         - name: ECR_REGISTRY
           value: 961317956813.dkr.ecr.us-east-1.amazonaws.com/node-cicd-kubernetes
+
+      secrets:
+        - name: AWS
 
       prologue:
         commands:
