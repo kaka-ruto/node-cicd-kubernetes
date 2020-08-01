@@ -82,6 +82,8 @@ blocks:
           - chmod a+x ~/bin/aws-iam-authenticator
           - export PATH=~/bin:$PATH
           - kubectl get pods
+          # Delete evicted pods
+          - kubectl get pods -o json | jq '.items[] | select(.status.reason!=null) | select(.status.reason | contains("Evicted")) | "kubectl delete pods \(.metadata.name) -n \(.metadata.namespace)"' | xargs -n 1 bash -c
 
           # Kubernetes needs to authenticate with ECR to pull the container image,
           # the auth token only lasts a few hours. So we create a new one each time.
