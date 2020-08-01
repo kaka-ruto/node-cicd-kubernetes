@@ -24,10 +24,10 @@ blocks:
       env_vars:
         # Adjust with your AWS Region, eg. us-east-2
         - name: AWS_DEFAULT_REGION
-          value: YOUR_AWS_REGION
+          value: us-east-1
         # Replace value with your ECR URL, eg.  521701321156.dkr.ecr.us-east-2.amazonaws.com
         - name: ECR_REGISTRY
-          value: YOUR_ECR_REGISTRY
+          value: 961317956813.dkr.ecr.us-east-1.amazonaws.com/node-cicd-kubernetes
         # The KUBECONFIG file must match the path on the aws-key secret.
         - name: KUBECONFIG
           value: /home/semaphore/aws-key.yml
@@ -49,14 +49,14 @@ blocks:
             - sudo pip install awscli
             - export ECR_PASSWORD=$(aws ecr get-login --no-include-email | awk '{print $6}')
             - kubectl delete secret aws-ecr || true
-            - kubectl create secret docker-registry aws-ecr --docker-server=https://$ECR_REGISTRY/semaphore-demo-cicd-kubernetes --docker-username=AWS --docker-password=$ECR_PASSWORD
+            - kubectl create secret docker-registry aws-ecr --docker-server=https://$ECR_REGISTRY --docker-username=AWS --docker-password=$ECR_PASSWORD
             - kubectl get secret aws-ecr
 
             # The following script creates a stable deployment with 3 replicas
             # We deploy the same docker image created in the docker build block
             # which was tagged with $SEMAPHORE_WORKFLOW_ID
-            - ./apply.sh manifests/deployment-aws.yml addressbook-stable 3 $ECR_REGISTRY/semaphore-demo-cicd-kubernetes:$SEMAPHORE_WORKFLOW_ID
+            - ./apply.sh manifests/deployment-aws.yml addressbook-stable 3 $ECR_REGISTRY:$SEMAPHORE_WORKFLOW_ID
 
-            # Since the canary deployment was a success, we no longer need it, 
+            # Since the canary deployment was a success, we no longer need it,
             # we delete it if it still exists
             - if kubectl get deployment addressbook-canary; then kubectl delete deployment/addressbook-canary; fi

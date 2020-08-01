@@ -146,9 +146,9 @@ blocks:
 # On error automatically start the rollback pipeline.
 # For more on such options, see:
 # https://docs.semaphoreci.com/article/50-pipeline-yaml#promotions
-# promotions:
-#   - name: Stable Deployment
-#     pipeline_file: deploy-stable-aws.yml
+promotions:
+  - name: Stable Deployment
+    pipeline_file: deploy-stable-aws.yml
 #   - name: Rollback Canary
 #     pipeline_file: rollback-canary-aws.yml
 #     auto_promote:
