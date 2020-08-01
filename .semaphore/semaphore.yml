@@ -17,7 +17,7 @@ blocks:
           value: 961317956813.dkr.ecr.us-east-1.amazonaws.com/node-cicd-kubernetes
 
       secrets:
-        - name: AWS
+        - name: aws-key
 
       # The prologue runs *before* each job in the block
       prologue:
@@ -50,7 +50,7 @@ blocks:
           value: 961317956813.dkr.ecr.us-east-1.amazonaws.com/node-cicd-kubernetes
 
       secrets:
-        - name: AWS
+        - name: aws-key
 
       # Pull the latest image to speed up builds
       prologue:
@@ -59,6 +59,7 @@ blocks:
           - sudo pip install awscli
           # ecr get-login outputs a login command, so execute that with bash
           - aws ecr get-login --no-include-email | bash
+          - docker pull "${ECR_REGISTRY}":$SEMAPHORE_WORKFLOW_ID
 
       jobs:
         # Static code test. Run a javascript linter.
@@ -90,7 +91,7 @@ blocks:
           value: 961317956813.dkr.ecr.us-east-1.amazonaws.com/node-cicd-kubernetes
 
       secrets:
-        - name: AWS
+        - name: aws-key
 
       prologue:
         commands:
@@ -108,15 +109,15 @@ blocks:
 
 # Canaries will automatically start when branch is master or the commit is tagged as hotfix*
 # Uncomment the relevant promotion for your favorite cloud below.
-# promotions:
+promotions:
   # - name: Canary Deployment (DigitalOcean)
     # pipeline_file: deploy-canary-digitalocean.yml
     # auto_promote:
       # when: "result = 'passed' and (branch = 'master' or tag =~ '^hotfix*')"
-  # - name: Canary Deployment (AWS)
-  #   pipeline_file: deploy-canary-aws.yml
-  #   auto_promote:
-  #     when: "result = 'passed' and (branch = 'master' or tag =~ '^hotfix*')"
+  - name: Canary Deployment (AWS)
+    pipeline_file: deploy-canary-aws.yml
+    auto_promote:
+      when: "result = 'passed' and (branch = 'master' or tag =~ '^hotfix*')"
   # - name: Canary Deployment (GCP)
   #   pipeline_file: deploy-canary-gcp.yml
   #   auto_promote:

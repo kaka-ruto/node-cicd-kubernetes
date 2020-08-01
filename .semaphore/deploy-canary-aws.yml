@@ -22,30 +22,35 @@ blocks:
       env_vars:
         # Adjust with your AWS Region, eg. us-east-2
         - name: AWS_DEFAULT_REGION
-          value: YOUR_AWS_REGION
+          value: us-east-1
         # Replace value with your ECR URL, eg.  521701321156.dkr.ecr.us-east-2.amazonaws.com
         - name: ECR_REGISTRY
-          value: YOUR_ECR_REGISTRY
+          value: 961317956813.dkr.ecr.us-east-1.amazonaws.com/node-cicd-kubernetes
+
+      # The prologue runs *before* each job in the block
+      prologue:
+        commands:
+          # Install the most up-to-date AWS cli
+          - sudo pip install awscli
+          # ecr get-login outputs a login command, so execute that with bash
+          - aws ecr get-login --no-include-email | bash
 
       jobs:
       - name: Push
         commands:
-            # Pull image from private registry
-            - docker login -u $SEMAPHORE_REGISTRY_USERNAME -p $SEMAPHORE_REGISTRY_PASSWORD $SEMAPHORE_REGISTRY_URL
-            - docker pull $SEMAPHORE_REGISTRY_URL/semaphore-demo-cicd-kubernetes:$SEMAPHORE_WORKFLOW_ID
+            # Pull image from ecr registry
+            - docker pull "${ECR_REGISTRY}":$SEMAPHORE_WORKFLOW_ID
 
-            # Install the most up-to-date AWS cli and login to ECR
-            - sudo pip install awscli
-            - aws ecr get-login --no-include-email | bash
+            # Check available images
             - docker images
 
             # Push a new image to ECR
-            - docker tag $SEMAPHORE_REGISTRY_URL/semaphore-demo-cicd-kubernetes:$SEMAPHORE_WORKFLOW_ID $ECR_REGISTRY/semaphore-demo-cicd-kubernetes:$SEMAPHORE_WORKFLOW_ID
-            - docker push $ECR_REGISTRY/semaphore-demo-cicd-kubernetes:$SEMAPHORE_WORKFLOW_ID
+            - docker tag $ECR_REGISTRY:$SEMAPHORE_WORKFLOW_ID $ECR_REGISTRY:$SEMAPHORE_WORKFLOW_ID
+            - docker push $ECR_REGISTRY:$SEMAPHORE_WORKFLOW_ID
 
   - name: Canary Deployment
     task:
-      # Import secret containing AWS token and kubeconfig 
+      # Import secret containing AWS token and kubeconfig
       # and the database username and password secret.
       # For info on creating secrets, see:
       # https://docs.semaphoreci.com/article/66-environment-variables-and-secrets
@@ -59,10 +64,10 @@ blocks:
       env_vars:
         # Adjust with your AWS Region, eg. us-east-2
         - name: AWS_DEFAULT_REGION
-          value: YOUR_AWS_REGION
+          value: us-east-1
         # Replace value with your ECR URL, eg.  521701321156.dkr.ecr.us-east-2.amazonaws.com
         - name: ECR_REGISTRY
-          value: YOUR_ECR_REGISTRY
+          value: 961317956813.dkr.ecr.us-east-1.amazonaws.com/node-cicd-kubernetes
         # The KUBECONFIG file must match the path on the aws-key secret.
         - name: KUBECONFIG
           value: /home/semaphore/aws-key.yml
@@ -83,7 +88,7 @@ blocks:
           - sudo pip install awscli
           - export ECR_PASSWORD=$(aws ecr get-login --no-include-email | awk '{print $6}')
           - kubectl delete secret aws-ecr || true
-          - kubectl create secret docker-registry aws-ecr --docker-server=https://$ECR_REGISTRY/semaphore-demo-cicd-kubernetes --docker-username=AWS --docker-password=$ECR_PASSWORD
+          - kubectl create secret docker-registry aws-ecr --docker-server=https://$ECR_REGISTRY --docker-username=AWS --docker-password=$ECR_PASSWORD
           - kubectl get secret aws-ecr
 
       jobs:
@@ -95,7 +100,7 @@ blocks:
             # The following script creates a canary deployment with 1 replica
             # We deploy the same docker image created in the docker build block
             # which was tagged with $SEMAPHORE_WORKFLOW_ID
-            - ./apply.sh manifests/deployment-aws.yml addressbook-canary 1 $ECR_REGISTRY/semaphore-demo-cicd-kubernetes:$SEMAPHORE_WORKFLOW_ID
+            - ./apply.sh manifests/deployment-aws.yml addressbook-canary 1 $ECR_REGISTRY:$SEMAPHORE_WORKFLOW_ID
 
             # Since we added an additional canary pod, if we had a stable deployment
             # we might want to scale it back to 2 replicas to keep 3 replicas total.
@@ -115,7 +120,7 @@ blocks:
       env_vars:
         # Adjust with your AWS Region, eg. us-east-2
         - name: AWS_DEFAULT_REGION
-          value: YOUR_AWS_REGION
+          value: us-east-1
         - name: KUBECONFIG
           value: /home/semaphore/aws-key.yml
 
@@ -141,10 +146,10 @@ blocks:
 # On error automatically start the rollback pipeline.
 # For more on such options, see:
 # https://docs.semaphoreci.com/article/50-pipeline-yaml#promotions
-promotions:
-  - name: Stable Deployment
-    pipeline_file: deploy-stable-aws.yml
-  - name: Rollback Canary
-    pipeline_file: rollback-canary-aws.yml
-    auto_promote:
-      when: "result = 'failed'"
+# promotions:
+#   - name: Stable Deployment
+#     pipeline_file: deploy-stable-aws.yml
+#   - name: Rollback Canary
+#     pipeline_file: rollback-canary-aws.yml
+#     auto_promote:
+#       when: "result = 'failed'"
