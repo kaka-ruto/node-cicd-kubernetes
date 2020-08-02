@@ -152,8 +152,8 @@ blocks:
 promotions:
   - name: Stable Deployment
     pipeline_file: deploy-stable-aws.yml
-    # auto_promote:
-    #   when: "result = 'passed' and (branch = 'master' or tag =~ '^hotfix*')"
+    auto_promote:
+      when: "result = 'passed' and (branch = 'master' or tag =~ '^hotfix*')"
 
   # Rollback incase something went wromg with the canary deployment
   - name: Rollback Canary
