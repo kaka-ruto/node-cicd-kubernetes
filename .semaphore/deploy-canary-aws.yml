@@ -83,7 +83,7 @@ blocks:
           - export PATH=~/bin:$PATH
           - kubectl get pods
           # Delete evicted pods
-          - kubectl get pods -o json | jq '.items[] | select(.status.reason!=null) | select(.status.reason | contains("Evicted")) | "kubectl delete pods \(.metadata.name) -n \(.metadata.namespace)"' | xargs -n 1 bash -c || true
+          # - kubectl get pods -o json | jq '.items[] | select(.status.reason!=null) | select(.status.reason | contains("Evicted")) | "kubectl delete pods \(.metadata.name) -n \(.metadata.namespace)"' | xargs -n 1 bash -c || true
 
           # Kubernetes needs to authenticate with ECR to pull the container image,
           # the auth token only lasts a few hours. So we create a new one each time.
@@ -152,6 +152,9 @@ blocks:
 promotions:
   - name: Stable Deployment
     pipeline_file: deploy-stable-aws.yml
+    auto_promote:
+      when: "result = 'passed' and (branch = 'master' or tag =~ '^hotfix*')"
+
   # Rollback incase something went wromg with the canary deployment
   - name: Rollback Canary
     pipeline_file: rollback-canary-aws.yml
