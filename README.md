@@ -1,4 +1,7 @@
 A Companion Demo for the CI/CD with Docker and Kubernetes Book
+Continuous Integration and Deployment with SemaphoreCI, Docker and Kubernetes.
+
+N.B: Tested and working on AWS Elastic Container Registry(ECR) and Elastic Kubernetes Service (EKS)
 
 ## Run it in your workstation
 
@@ -38,10 +41,10 @@ $ sem init
 
 Cloud services required:
 
-- Kubernetes Cluster (recommended 3 nodes) called `semaphore-demo-cicd-kubernetes`
+- Kubernetes Cluster (recommended 3 nodes) called `node-cicd-kubernetes`
 - PostgreSQL Database in the same region and VPC as the cluster.
 
-Open the relevant pipeline files at `.semaphore` and fill in the environment variables for the blocks. 
+Open the relevant pipeline files at `.semaphore` and fill in the environment variables for the blocks.
 Uncomment the desired promotion on `.semaphore/semaphore.yml`.
 
 ### Create Secrets
@@ -63,7 +66,16 @@ Depending on the cloud provider, you’ll need to create different secrets.
 
 #### AWS
 
-- Create an IAM User with Administrator permissions. Create a secret with the access id and the Kubernetes kubeconfig file:
+- Create an IAM User with Administrator permissions.
+
+```bash
+$ aws configure
+AWS Access Key ID: TYPE YOUR ACCESS KEY ID
+AWS Secret Access Key: TYPE YOUR SECRET ACCESS KEY
+Default region name: TYPE YOUR REGION
+```
+
+- Create a secret with the access id and the Kubernetes kubeconfig file:
 
 ```bash
 $ sem create secret aws-key \
@@ -72,9 +84,22 @@ $ sem create secret aws-key \
     -f YOUR_KUBECONFIG.yml:/home/semaphore/aws-key.yml
 ```
 
+- Install the official CLI for Amazon EKS - [eksctl](https://eksctl.io)
+
+```bash
+ $ curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+ $ sudo mv /tmp/eksctl /usr/local/bin
+```
+
+- Create a 3 Node EC2 cluster, using t2.micro (t2.nano gave me gave me insufficient memory errors, and evicted/terminated all my pods)
+
+```bash
+$ eksctl create cluster -t t2.micro -N 3 --region YOUR_REGION --name node-cicd-kubernetes
+```
+
 #### Google Cloud
 
-- Create a project called `semaphore-demo-cicd-kubernetes`
+- Create a project called `node-cicd-kubernetes`
 - Create service account and generate a key file. Upload the file to Semaphore:
 
 ```bash

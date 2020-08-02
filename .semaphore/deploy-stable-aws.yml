@@ -57,9 +57,9 @@ blocks:
             # which was tagged with $SEMAPHORE_WORKFLOW_ID
             - ./apply.sh manifests/deployment-aws.yml addressbook-stable 3 $ECR_REGISTRY:$SEMAPHORE_WORKFLOW_ID
 
+              # Check the service status to see the external IP
+            - kubectl get service
+
             # Since the canary deployment was a success, we no longer need it,
             # we delete it if it still exists
             - if kubectl get deployment addressbook-canary; then kubectl delete deployment/addressbook-canary; fi
-
-            # Check the service status to see the external IP
-            - kubectl get service
