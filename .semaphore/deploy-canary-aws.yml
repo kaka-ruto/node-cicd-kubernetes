@@ -152,7 +152,8 @@ blocks:
 promotions:
   - name: Stable Deployment
     pipeline_file: deploy-stable-aws.yml
-#   - name: Rollback Canary
-#     pipeline_file: rollback-canary-aws.yml
-#     auto_promote:
-#       when: "result = 'failed'"
+  # Rollback incase something went wromg with the canary deployment
+  - name: Rollback Canary
+    pipeline_file: rollback-canary-aws.yml
+    auto_promote:
+      when: "result = 'failed'"
