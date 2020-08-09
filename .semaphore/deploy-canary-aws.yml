@@ -97,9 +97,11 @@ blocks:
         - name: Deploy
           commands:
             # Create the namespace
-            - kubectl apply -f manifests/namespace.yml
+            - kubectl -n node-cicd apply -f manifests/namespace.yml
             # Create the load balancer service
-            - kubectl apply -f manifests/service.yml
+            - kubectl -n node-cicd apply -f manifests/service.yml
+            # Create the ingress controller
+            - kubectl -n node-cicd apply -f manifests/ingress.yml
 
             # The following script creates a canary deployment with 1 replica
             # We deploy the same docker image created in the docker build block

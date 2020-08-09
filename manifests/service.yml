@@ -6,7 +6,7 @@ metadata:
 spec:
   selector:
     app: addressbook
-  type: LoadBalancer
+  type: NodePort
   ports:
     - port: 80
       targetPort: 3000

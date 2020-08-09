@@ -17,6 +17,6 @@ export img=$4
 
 apply_tmp=$(mktemp)
 cat $manifest | envsubst | tee $apply_tmp
-kubectl apply -f $apply_tmp
+kubectl -n node-cicd apply -f $apply_tmp
 kubectl rollout status -f $apply_tmp
 rm -f $apply_tmp
