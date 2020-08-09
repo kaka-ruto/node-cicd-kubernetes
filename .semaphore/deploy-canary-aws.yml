@@ -96,6 +96,8 @@ blocks:
       jobs:
         - name: Deploy
           commands:
+            # Create the namespace
+            - kubectl apply -f manifests/namespace.yml
             # Create the load balancer service
             - kubectl apply -f manifests/service.yml
 
@@ -103,6 +105,9 @@ blocks:
             # We deploy the same docker image created in the docker build block
             # which was tagged with $SEMAPHORE_WORKFLOW_ID
             - ./apply.sh manifests/deployment-aws.yml addressbook-canary 1 $ECR_REGISTRY:$SEMAPHORE_WORKFLOW_ID
+
+            # Get nodes
+            - kubectl get nodes
 
             # Since we added an additional canary pod, if we had a stable deployment
             # we might want to scale it back to 2 replicas to keep 3 replicas total.
